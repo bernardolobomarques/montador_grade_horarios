@@ -7,7 +7,7 @@ const Header = () => {
   return (
     <>
         <HeaderContainer>
-            <h1>Montador de Cronograma</h1>
+            <Link to='/' className='logo-link'><h1>Montador de Cronograma</h1></Link>
             <div className='header__content'>
                 <Link to='/Profile' className='profile-icon' > <VscAccount /></Link>
             </div>

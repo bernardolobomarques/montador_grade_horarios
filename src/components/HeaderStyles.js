@@ -14,19 +14,22 @@ const HeaderContainer = styled.header`
     background-color: #333;
     color: white;
 
+    .logo-link {
+        text-decoration: none;
+        color: white;
+    }
+
     .header__content {
         display: flex;
         align-items: center;
-        font-size: 3rem; /* Adjust the size to match the h1 font size */
-        text-decoration: none;
-        color: white;
-    } 
+        font-size: 3rem;
+        } 
 
     .profile-icon {
-        font-size: 2rem;
-        margin-left: 1rem;
+        display: flex;
+        align-items: center;
         color: white;
-    }
+        }
 
   }
 `;
