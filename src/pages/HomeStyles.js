@@ -6,15 +6,12 @@ const Container = styled.div`
     align-items: center;
     padding: 20px;
     background-color: #e0e0e0; /* Light gray background */
-    min-height: 100vh; /* Full page height */
+    min-height: 90vh; /* Full page height */
 
     .parallax {
-        background-image: url('../media/agenda.webp'); /* Corrected image URL */
-        height: 400px;
-        background-attachment: fixed;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+        background-image: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0');
+        height: 40vh;
+        width: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -33,13 +30,21 @@ const Container = styled.div`
         flex: 1; /* Take up remaining space */
     }
 
-    .footer {
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
+    .jumper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50px;
+        width: 100%;
+        padding-top: 20px;
     }
+
+    .jumper div {
+        margin: 0 10px;
+        background-color: rgba(255, 230, 0, 0.9);
+        font-size: 2em;
+    }
+
 `;
 
 export default Container;
