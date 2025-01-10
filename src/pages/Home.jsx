@@ -1,11 +1,15 @@
 import React from 'react';
+import HomeStyles from './HomeStyles';
+import Header from '../components/Header';
+
 
 const Home = () => {
     return (
-        <div>
-            <h1>Welcome to the Home Page</h1>
-            <p>This is the starting point of your application.</p>
-        </div>
+        <>
+            {/* <Container> */}
+                <Header />
+            {/* </Container> */}
+        </>
     );
 };
 
