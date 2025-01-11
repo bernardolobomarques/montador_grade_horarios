@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Header from '../components/Header';
-import { LoginStyles } from './LoginStyles';
+import { ScheduleFormStyles } from './ScheduleFormStyles';
 
 const ScheduleForm = () => {
     const [step, setStep] = useState(1);
     const [scheduleDetails, setScheduleDetails] = useState({
         name: '',
-        daysOfWeek: '',
+        weekdays: {
+            monday: false,
+            tuesday: false,
+            wednesday: false,
+            thursday: false,
+            friday: false,
+            saturday: false,
+            sunday: false
+        },
         startTime: '',
         endTime: '',
         periodsPerDay: '',
@@ -22,6 +30,16 @@ const ScheduleForm = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setScheduleDetails({ ...scheduleDetails, [name]: value });
+    };
+
+    const handleWeekdayChange = (day) => {
+        setScheduleDetails({
+            ...scheduleDetails,
+            weekdays: {
+                ...scheduleDetails.weekdays,
+                [day]: !scheduleDetails.weekdays[day]
+            }
+        });
     };
 
     const handleSubjectChange = (index, e) => {
@@ -64,7 +82,15 @@ const ScheduleForm = () => {
                 alert('Schedule registered successfully!');
                 setScheduleDetails({
                     name: '',
-                    daysOfWeek: '',
+                    weekdays: {
+                        monday: false,
+                        tuesday: false,
+                        wednesday: false,
+                        thursday: false,
+                        friday: false,
+                        saturday: false,
+                        sunday: false
+                    },
                     startTime: '',
                     endTime: '',
                     periodsPerDay: '',
@@ -87,24 +113,25 @@ const ScheduleForm = () => {
 
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
+    const goToStep = (stepNumber) => setStep(stepNumber);
 
     return (
         <>
             <Header />
-            <LoginStyles>
-                <div className='main-div-login'>
-                    <div className='progress-bar'>
-                        <p>Step {step} of 3</p>
-                        <ul>
-                            <li className={step >= 1 ? 'completed' : ''}>Step 1: Initial Information</li>
-                            <li className={step >= 2 ? 'completed' : ''}>Step 2: Register Subjects</li>
-                            <li className={step >= 3 ? 'completed' : ''}>Step 3: Register Teachers</li>
-                        </ul>
-                    </div>
+            <ScheduleFormStyles>
+                <div className='progress-bar'>
+                    <ul>
+                        <li className={step === 1 ? 'active' : ''} onClick={() => goToStep(1)}>Step 1: Initial Information</li>
+                        <li className={step === 2 ? 'active' : ''} onClick={() => goToStep(2)}>Step 2: Register Subjects</li>
+                        <li className={step === 3 ? 'active' : ''} onClick={() => goToStep(3)}>Step 3: Register Teachers</li>
+                    </ul>
+                </div>
+                <div className='main-div-schedule'>
                     <h1>Register Schedule</h1>
                     <form onSubmit={handleSubmit}>
                         {step === 1 && (
                             <>
+                                <label htmlFor="name">Name</label>
                                 <input
                                     type="text"
                                     name="name"
@@ -112,15 +139,31 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.name}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
-                                <input
-                                    type="text"
-                                    name="daysOfWeek"
-                                    placeholder="Days of the Week"
-                                    value={scheduleDetails.daysOfWeek}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                <label>Days of the Week</label>
+                                <div className="weekday-container">
+                                    {Object.entries({
+                                        monday: 'Monday',
+                                        tuesday: 'Tuesday',
+                                        wednesday: 'Wednesday',
+                                        thursday: 'Thursday',
+                                        friday: 'Friday',
+                                        saturday: 'Saturday',
+                                        sunday: 'Sunday'
+                                    }).map(([key, label]) => (
+                                        <div key={key} className="weekday-item">
+                                            <input
+                                                type="checkbox"
+                                                id={key}
+                                                checked={scheduleDetails.weekdays[key]}
+                                                onChange={() => handleWeekdayChange(key)}
+                                            />
+                                            <label htmlFor={key}>{label}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                                <label htmlFor="startTime">Start Time</label>
                                 <input
                                     type="time"
                                     name="startTime"
@@ -128,7 +171,9 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.startTime}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
+                                <label htmlFor="endTime">End Time</label>
                                 <input
                                     type="time"
                                     name="endTime"
@@ -136,7 +181,9 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.endTime}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
+                                <label htmlFor="periodsPerDay">Periods per Day</label>
                                 <input
                                     type="number"
                                     name="periodsPerDay"
@@ -144,7 +191,9 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.periodsPerDay}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
+                                <label htmlFor="periodDuration">Period Duration (minutes)</label>
                                 <input
                                     type="number"
                                     name="periodDuration"
@@ -152,7 +201,9 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.periodDuration}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
+                                <label htmlFor="numberOfClasses">Number of Classes</label>
                                 <input
                                     type="number"
                                     name="numberOfClasses"
@@ -160,6 +211,7 @@ const ScheduleForm = () => {
                                     value={scheduleDetails.numberOfClasses}
                                     onChange={handleChange}
                                     required
+                                    className="input-field"
                                 />
                                 <button type="button" onClick={nextStep}>Next</button>
                             </>
@@ -168,6 +220,7 @@ const ScheduleForm = () => {
                             <>
                                 {scheduleDetails.subjects.map((subject, index) => (
                                     <div key={index}>
+                                        <label htmlFor={`subject-name-${index}`}>Subject Name</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -175,7 +228,9 @@ const ScheduleForm = () => {
                                             value={subject.name}
                                             onChange={(e) => handleSubjectChange(index, e)}
                                             required
+                                            className="input-field"
                                         />
+                                        <label htmlFor={`periodsPerWeek-${index}`}>Periods per Week</label>
                                         <input
                                             type="number"
                                             name="periodsPerWeek"
@@ -183,6 +238,7 @@ const ScheduleForm = () => {
                                             value={subject.periodsPerWeek}
                                             onChange={(e) => handleSubjectChange(index, e)}
                                             required
+                                            className="input-field"
                                         />
                                     </div>
                                 ))}
@@ -195,6 +251,7 @@ const ScheduleForm = () => {
                             <>
                                 {scheduleDetails.teachers.map((teacher, index) => (
                                     <div key={index}>
+                                        <label htmlFor={`teacher-name-${index}`}>Teacher Name</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -202,7 +259,9 @@ const ScheduleForm = () => {
                                             value={teacher.name}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
+                                            className="input-field"
                                         />
+                                        <label htmlFor={`teacher-subject-${index}`}>Subject</label>
                                         <input
                                             type="text"
                                             name="subject"
@@ -210,7 +269,9 @@ const ScheduleForm = () => {
                                             value={teacher.subject}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
+                                            className="input-field"
                                         />
+                                        <label htmlFor={`teacher-workload-${index}`}>Workload (hours)</label>
                                         <input
                                             type="number"
                                             name="workload"
@@ -218,6 +279,7 @@ const ScheduleForm = () => {
                                             value={teacher.workload}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
+                                            className="input-field"
                                         />
                                     </div>
                                 ))}
@@ -229,7 +291,7 @@ const ScheduleForm = () => {
                     </form>
                     {error && <p>{error}</p>}
                 </div>
-            </LoginStyles>
+            </ScheduleFormStyles>
         </>
     );
 };

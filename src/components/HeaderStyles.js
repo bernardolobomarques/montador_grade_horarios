@@ -13,6 +13,8 @@ const HeaderContainer = styled.header`
     padding: 1rem;
     background-color: #333;
     color: white;
+    z-index: 999; /* Ensure the header is above other content */
+    position: relative; /* Add this */
 
     .logo-link {
         text-decoration: none;
@@ -23,15 +25,15 @@ const HeaderContainer = styled.header`
         display: flex;
         align-items: center;
         font-size: 3rem;
-        } 
+        position: relative; /* Add this */
+    } 
 
     .profile-icon {
         display: flex;
         align-items: center;
         color: white;
-        }
-
-  }
+        cursor: pointer; /* Ensure the icon is clickable */
+    }
 `;
 
 export default HeaderContainer;

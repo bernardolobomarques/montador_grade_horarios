@@ -72,6 +72,7 @@ const LoginStyles = styled.div`
     p.register, p.login {
         margin-top: 1rem;
         color: black;
+    }
 `;
 
 export { LoginStyles };
