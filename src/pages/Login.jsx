@@ -62,8 +62,10 @@ const Login = () => {
 
     return (
         <>
-            <Header />
             <LoginStyles>
+                <div className='home-button'>
+                    <Link to='/'>VOLTAR</Link>
+                </div>
                 <div className='main-div-login'>
                     <h1>Login</h1>
                     <form onSubmit={handleLoginSubmit}>
@@ -84,13 +86,15 @@ const Login = () => {
                         </button>
                     </form>
                     {error && <p>{error}</p>}
-                    <GoogleOAuthProvider clientId="60153437629-j0ig1ntfbslgr7je2d5617fuqv10kh74.apps.googleusercontent.com">
-                        <GoogleLogin
-                            onSuccess={handleGoogleLoginSuccess}
-                            onFailure={handleGoogleLoginFailure}
-                        />
-                    </GoogleOAuthProvider>
-                    <Link to="/register">Registre-se</Link>
+                    <div className='google-login'>
+                        <GoogleOAuthProvider clientId="60153437629-j0ig1ntfbslgr7je2d5617fuqv10kh74.apps.googleusercontent.com">
+                            <GoogleLogin
+                                onSuccess={handleGoogleLoginSuccess}
+                                onFailure={handleGoogleLoginFailure}
+                            />
+                        </GoogleOAuthProvider>
+                    </div>
+                    <p className='register'>Não tem conta? <Link to="/register">Registre-se</Link></p>
                 </div>
             </LoginStyles>
         </>

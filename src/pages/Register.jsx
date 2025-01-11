@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import { LoginStyles } from './LoginStyles';
 import axios from 'axios';
@@ -40,8 +40,10 @@ const Register = () => {
 
     return (
         <>
-            <Header />
             <LoginStyles>
+                <div className='home-button'>
+                    <Link to='/'>VOLTAR</Link>
+                </div>
                 <div className='main-div-login'>
                     <h1>Register</h1>
                     <form onSubmit={handleRegisterSubmit}>
@@ -74,6 +76,7 @@ const Register = () => {
                         </button>
                     </form>
                     {error && <p>{error}</p>}
+                    <p className='login'>Já tem conta? <Link to="/login">Entrar</Link></p>
                 </div>
             </LoginStyles>
         </>
