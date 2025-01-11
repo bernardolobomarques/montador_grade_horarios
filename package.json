@@ -19,7 +19,6 @@
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "firebase": "^10.6.0",
     "gh-pages": "^6.1.1",
     "google-auth-library": "^9.15.0",
     "jwt-decode": "^4.0.0",
