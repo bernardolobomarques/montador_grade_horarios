@@ -6,6 +6,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Content from "./pages/Content";
 import Register from "./pages/Register";
+import ScheduleForm from "./pages/ScheduleForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 
@@ -21,6 +22,7 @@ root.render(
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/content" element={<ProtectedRoute><Content /></ProtectedRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/schedule" element={<ProtectedRoute><ScheduleForm /></ProtectedRoute>} />
       </Routes>
     </HashRouter>
   </React.StrictMode>
