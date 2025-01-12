@@ -7,7 +7,7 @@ const ScheduleForm = () => {
     const [step, setStep] = useState(1);
     const [scheduleDetails, setScheduleDetails] = useState({
         name: '',
-        weekdays: [],
+        daysOfWeek: [], // Alterado de weekdays para daysOfWeek
         startTime: '',
         endTime: '',
         periodsPerDay: '',
@@ -24,12 +24,13 @@ const ScheduleForm = () => {
         setScheduleDetails({ ...scheduleDetails, [name]: value });
     };
 
-    const handleWeekdayChange = (day) => {
+    const handleWeekdayChange = (e) => {
+        const { name } = e.target;
         setScheduleDetails((prevDetails) => {
-            const weekdays = prevDetails.weekdays.includes(day)
-                ? prevDetails.weekdays.filter((d) => d !== day)
-                : [...prevDetails.weekdays, day];
-            return { ...prevDetails, weekdays };
+            const daysOfWeek = prevDetails.daysOfWeek.includes(name)
+                ? prevDetails.daysOfWeek.filter((d) => d !== name)
+                : [...prevDetails.daysOfWeek, name];
+            return { ...prevDetails, daysOfWeek };
         });
     };
 
@@ -68,12 +69,12 @@ const ScheduleForm = () => {
     
         try {
             const user = JSON.parse(localStorage.getItem('user')); // Assumindo que o usuário está armazenado no localStorage
-            const response = await axios.post('http://localhost:5000/schedule', { ...scheduleDetails, daysOfWeek: scheduleDetails.weekdays, user: user.email });
+            const response = await axios.post('http://localhost:5000/schedule', { ...scheduleDetails, user: user.email });
             if (response.data.success) {
                 alert('Schedule registered successfully!');
                 setScheduleDetails({
                     name: '',
-                    weekdays: [],
+                    daysOfWeek: [], // Alterado de weekdays para daysOfWeek
                     startTime: '',
                     endTime: '',
                     periodsPerDay: '',
@@ -126,15 +127,24 @@ const ScheduleForm = () => {
                                 />
                                 <label>Days of the Week</label>
                                 <div className="weekday-container">
-                                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                                        <div key={day} className="weekday-item">
+                                    {[
+                                        { name: 'Sunday', label: 'S' },
+                                        { name: 'Monday', label: 'M' },
+                                        { name: 'Tuesday', label: 'T' },
+                                        { name: 'Wednesday', label: 'W' },
+                                        { name: 'Thursday', label: 'T' },
+                                        { name: 'Friday', label: 'F' },
+                                        { name: 'Saturday', label: 'S' }
+                                    ].map((day) => (
+                                        <div key={day.name} className="weekday-item">
                                             <input
                                                 type="checkbox"
-                                                id={day}
-                                                checked={scheduleDetails.weekdays.includes(day)}
-                                                onChange={() => handleWeekdayChange(day)}
+                                                id={`check_${day.name.toLowerCase()}`}
+                                                name={day.name}
+                                                checked={scheduleDetails.daysOfWeek.includes(day.name)} // Alterado de weekdays para daysOfWeek
+                                                onChange={handleWeekdayChange}
                                             />
-                                            <label htmlFor={day}>{day}</label>
+                                            <label htmlFor={`check_${day.name.toLowerCase()}`}>{day.label}</label>
                                         </div>
                                     ))}
                                 </div>
