@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Header from '../components/Header';
 import { ScheduleFormStyles } from './ScheduleFormStyles';
 
 const ScheduleForm = () => {
@@ -101,7 +100,6 @@ const ScheduleForm = () => {
 
     return (
         <>
-            <Header />
             <ScheduleFormStyles>
                 <div className='progress-bar'>
                     <ul>
@@ -111,100 +109,118 @@ const ScheduleForm = () => {
                     </ul>
                 </div>
                 <div className='main-div-schedule'>
-                    <h1>Register Schedule</h1>
                     <form onSubmit={handleSubmit}>
                         {step === 1 && (
                             <>
-                                <label htmlFor="name">Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    placeholder="Name"
-                                    value={scheduleDetails.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label>Days of the Week</label>
-                                <div className="weekday-container">
-                                    {[
-                                        { name: 'Sunday', label: 'S' },
-                                        { name: 'Monday', label: 'M' },
-                                        { name: 'Tuesday', label: 'T' },
-                                        { name: 'Wednesday', label: 'W' },
-                                        { name: 'Thursday', label: 'T' },
-                                        { name: 'Friday', label: 'F' },
-                                        { name: 'Saturday', label: 'S' }
-                                    ].map((day) => (
-                                        <div key={day.name} className="weekday-item">
-                                            <input
-                                                type="checkbox"
-                                                id={`check_${day.name.toLowerCase()}`}
-                                                name={day.name}
-                                                checked={scheduleDetails.daysOfWeek.includes(day.name)} // Alterado de weekdays para daysOfWeek
-                                                onChange={handleWeekdayChange}
-                                            />
-                                            <label htmlFor={`check_${day.name.toLowerCase()}`}>{day.label}</label>
-                                        </div>
-                                    ))}
+                                <h1>Inicial Information</h1>
+                                <div className="input-group">
+                                    <label htmlFor="name">Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Name"
+                                        value={scheduleDetails.name}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
                                 </div>
-                                <label htmlFor="startTime">Start Time</label>
-                                <input
-                                    type="time"
-                                    name="startTime"
-                                    placeholder="Start Time"
-                                    value={scheduleDetails.startTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="endTime">End Time</label>
-                                <input
-                                    type="time"
-                                    name="endTime"
-                                    placeholder="End Time"
-                                    value={scheduleDetails.endTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="periodsPerDay">Periods per Day</label>
-                                <input
-                                    type="number"
-                                    name="periodsPerDay"
-                                    placeholder="Periods per Day"
-                                    value={scheduleDetails.periodsPerDay}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="periodDuration">Period Duration (minutes)</label>
-                                <input
-                                    type="number"
-                                    name="periodDuration"
-                                    placeholder="Period Duration (minutes)"
-                                    value={scheduleDetails.periodDuration}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="numberOfClasses">Number of Classes</label>
-                                <input
-                                    type="number"
-                                    name="numberOfClasses"
-                                    placeholder="Number of Classes"
-                                    value={scheduleDetails.numberOfClasses}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
+                                <div className='input-group'>
+                                    <label>Days of the Week</label>
+                                    <div className="weekday-container">
+                                        {[
+                                            { name: 'Sunday', label: 'S' },
+                                            { name: 'Monday', label: 'M' },
+                                            { name: 'Tuesday', label: 'T' },
+                                            { name: 'Wednesday', label: 'W' },
+                                            { name: 'Thursday', label: 'T' },
+                                            { name: 'Friday', label: 'F' },
+                                            { name: 'Saturday', label: 'S' }
+                                        ].map((day) => (
+                                            <div key={day.name} className="weekday-item">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`check_${day.name.toLowerCase()}`}
+                                                    name={day.name}
+                                                    checked={scheduleDetails.daysOfWeek.includes(day.name)} // Alterado de weekdays para daysOfWeek
+                                                    onChange={handleWeekdayChange}
+                                                />
+                                                <label htmlFor={`check_${day.name.toLowerCase()}`}>{day.label}</label>
+                                            </div>
+                                        
+                                        ))}
+                                    </div>
+                                </div>
+                                <div id='time-container'>
+                                    <div className='start-time-div'>
+                                        <label htmlFor="startTime">Start Time</label>
+                                        <input
+                                            type="time"
+                                            name="startTime"
+                                            placeholder="Start Time"
+                                            value={scheduleDetails.startTime}
+                                            onChange={handleChange}
+                                            required
+                                            className="input-field"
+                                    />
+                                    </div>
+                                    <div className='end-time-div'>
+                                        <label htmlFor="endTime">End Time</label>
+                                        <input
+                                            type="time"
+                                            name="endTime"
+                                            placeholder="End Time"
+                                            value={scheduleDetails.endTime}
+                                            onChange={handleChange}
+                                            required
+                                            className="input-field"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="periodsPerDay">Periods per Day</label>
+                                    <input
+                                        type="number"
+                                        name="periodsPerDay"
+                                        placeholder="Periods per Day"
+                                        value={scheduleDetails.periodsPerDay}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="periodDuration">Period Duration (minutes)</label>
+                                    <input
+                                        type="number"
+                                        name="periodDuration"
+                                        placeholder="Period Duration (minutes)"
+                                        value={scheduleDetails.periodDuration}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="numberOfClasses">Number of Classes</label>
+                                    <input
+                                        type="number"
+                                        name="numberOfClasses"
+                                        placeholder="Number of Classes"
+                                        value={scheduleDetails.numberOfClasses}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
                                 <button type="button" onClick={nextStep}>Next</button>
                             </>
                         )}
                         {step === 2 && (
                             <>
+                                <h1>Register Subjects</h1>
                                 {scheduleDetails.subjects.map((subject, index) => (
-                                    <div key={index}>
+                                    <div key={index} className="input-group">
                                         <label htmlFor={`subject-name-${index}`}>Subject Name</label>
                                         <input
                                             type="text"
@@ -234,8 +250,9 @@ const ScheduleForm = () => {
                         )}
                         {step === 3 && (
                             <>
+                                <h1>Register Teachers</h1>
                                 {scheduleDetails.teachers.map((teacher, index) => (
-                                    <div key={index}>
+                                    <div key={index} className="input-group">
                                         <label htmlFor={`teacher-name-${index}`}>Teacher Name</label>
                                         <input
                                             type="text"
