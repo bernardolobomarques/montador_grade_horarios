@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ScheduleFormStyles } from './ScheduleFormStyles';
+import { Navigate, useNavigate } from 'react-router-dom'; // Import useHistory
 
 const ScheduleForm = () => {
     const [step, setStep] = useState(1);
@@ -12,11 +13,14 @@ const ScheduleForm = () => {
         periodsPerDay: '',
         periodDuration: '',
         numberOfClasses: '',
-        subjects: [{ name: '', periodsPerWeek: '' }],
+        subjects: [],
         teachers: [{ name: '', subject: '', workload: '' }]
     });
+    const [newSubject, setNewSubject] = useState({ name: '', periodsPerWeek: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [subjectError, setSubjectError] = useState('');
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,11 +37,9 @@ const ScheduleForm = () => {
         });
     };
 
-    const handleSubjectChange = (index, e) => {
+    const handleSubjectChange = (e) => {
         const { name, value } = e.target;
-        const subjects = [...scheduleDetails.subjects];
-        subjects[index][name] = value;
-        setScheduleDetails({ ...scheduleDetails, subjects });
+        setNewSubject({ ...newSubject, [name]: value });
     };
 
     const handleTeacherChange = (index, e) => {
@@ -48,10 +50,21 @@ const ScheduleForm = () => {
     };
 
     const addSubject = () => {
+        if (!newSubject.name || !newSubject.periodsPerWeek) {
+            setSubjectError('Please fill in both fields before adding a subject.');
+            return;
+        }
         setScheduleDetails({
             ...scheduleDetails,
-            subjects: [...scheduleDetails.subjects, { name: '', periodsPerWeek: '' }]
+            subjects: [...scheduleDetails.subjects, newSubject]
         });
+        setNewSubject({ name: '', periodsPerWeek: '' });
+        setSubjectError('');
+    };
+
+    const removeSubject = (index) => {
+        const updatedSubjects = scheduleDetails.subjects.filter((_, i) => i !== index);
+        setScheduleDetails({ ...scheduleDetails, subjects: updatedSubjects });
     };
 
     const addTeacher = () => {
@@ -79,7 +92,7 @@ const ScheduleForm = () => {
                     periodsPerDay: '',
                     periodDuration: '',
                     numberOfClasses: '',
-                    subjects: [{ name: '', periodsPerWeek: '' }],
+                    subjects: [],
                     teachers: [{ name: '', subject: '', workload: '' }],
                     user: localStorage.getItem('user')
                 });
@@ -101,6 +114,7 @@ const ScheduleForm = () => {
     return (
         <>
             <ScheduleFormStyles>
+                <button className="close-button" onClick={() => navigate('/content')}>⮜</button> {/* Add close button */}
                 <div className='progress-bar'>
                     <ul>
                         <li className={step === 1 ? 'active' : ''} onClick={() => goToStep(1)}>Step 1: Initial Information</li>
@@ -113,12 +127,13 @@ const ScheduleForm = () => {
                         {step === 1 && (
                             <>
                                 <h1>Inicial Information</h1>
+                                <br />
                                 <div className="input-group">
                                     <label htmlFor="name">Name</label>
                                     <input
                                         type="text"
                                         name="name"
-                                        placeholder="Name"
+                                        placeholder="ex.: HighSchool - Morning"
                                         value={scheduleDetails.name}
                                         onChange={handleChange}
                                         required
@@ -182,7 +197,7 @@ const ScheduleForm = () => {
                                     <input
                                         type="number"
                                         name="periodsPerDay"
-                                        placeholder="Periods per Day"
+                                        placeholder="ex.: 7"
                                         value={scheduleDetails.periodsPerDay}
                                         onChange={handleChange}
                                         required
@@ -194,7 +209,7 @@ const ScheduleForm = () => {
                                     <input
                                         type="number"
                                         name="periodDuration"
-                                        placeholder="Period Duration (minutes)"
+                                        placeholder="ex.: 40"
                                         value={scheduleDetails.periodDuration}
                                         onChange={handleChange}
                                         required
@@ -206,7 +221,7 @@ const ScheduleForm = () => {
                                     <input
                                         type="number"
                                         name="numberOfClasses"
-                                        placeholder="Number of Classes"
+                                        placeholder="ex.: 4"
                                         value={scheduleDetails.numberOfClasses}
                                         onChange={handleChange}
                                         required
@@ -219,31 +234,46 @@ const ScheduleForm = () => {
                         {step === 2 && (
                             <>
                                 <h1>Register Subjects</h1>
-                                {scheduleDetails.subjects.map((subject, index) => (
-                                    <div key={index} className="input-group">
-                                        <label htmlFor={`subject-name-${index}`}>Subject Name</label>
+                                <br />
+                                <div className='added-subjects-container'>
+                                    <p id='added-subjects-p'>Added Subjects :</p>
+                                </div>
+                                <div className="subjects">
+                                    {scheduleDetails.subjects.map((subject, index) => (
+                                        <div key={index} className="added-subjects">
+                                            <p>{subject.name} - {subject.periodsPerWeek} periods/week</p>
+                                            <button type="button" onClick={() => removeSubject(index)}>X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className='group-subject'>
+                                    <div className="input-group">
+                                        <label htmlFor="subject-name">Subject Name</label>
                                         <input
                                             type="text"
                                             name="name"
-                                            placeholder="Subject Name"
-                                            value={subject.name}
-                                            onChange={(e) => handleSubjectChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`periodsPerWeek-${index}`}>Periods per Week</label>
-                                        <input
-                                            type="number"
-                                            name="periodsPerWeek"
-                                            placeholder="Periods per Week"
-                                            value={subject.periodsPerWeek}
-                                            onChange={(e) => handleSubjectChange(index, e)}
+                                            placeholder="ex.: Math"
+                                            value={newSubject.name}
+                                            onChange={handleSubjectChange}
                                             required
                                             className="input-field"
                                         />
                                     </div>
-                                ))}
-                                <button type="button" onClick={addSubject}>Add Subject</button>
+                                    <div className='input-group'>
+                                        <label htmlFor="periodsPerWeek">Periods per Week</label>
+                                        <input
+                                            type="number"
+                                            name="periodsPerWeek"
+                                            placeholder="ex.: 5"
+                                            value={newSubject.periodsPerWeek}
+                                            onChange={handleSubjectChange}
+                                            required
+                                            className="input-field"
+                                        />
+                                    </div>
+                                    <button type="button" id='addbutton' onClick={addSubject}>+</button>
+                                </div>
+                                {subjectError && <p className="error-message">{subjectError}</p>}
                                 <button type="button" onClick={prevStep}>Previous</button>
                                 <button type="button" onClick={nextStep}>Next</button>
                             </>
@@ -251,13 +281,14 @@ const ScheduleForm = () => {
                         {step === 3 && (
                             <>
                                 <h1>Register Teachers</h1>
+                                <br />
                                 {scheduleDetails.teachers.map((teacher, index) => (
                                     <div key={index} className="input-group">
                                         <label htmlFor={`teacher-name-${index}`}>Teacher Name</label>
                                         <input
                                             type="text"
                                             name="name"
-                                            placeholder="Teacher Name"
+                                            placeholder="ex.: John Doe"
                                             value={teacher.name}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
@@ -267,7 +298,7 @@ const ScheduleForm = () => {
                                         <input
                                             type="text"
                                             name="subject"
-                                            placeholder="Subject"
+                                            placeholder="ex.: Math"
                                             value={teacher.subject}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
@@ -277,7 +308,7 @@ const ScheduleForm = () => {
                                         <input
                                             type="number"
                                             name="workload"
-                                            placeholder="Workload (hours)"
+                                            placeholder="ex.: 20"
                                             value={teacher.workload}
                                             onChange={(e) => handleTeacherChange(index, e)}
                                             required
