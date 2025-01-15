@@ -193,22 +193,10 @@ const ScheduleFormStyles = styled.div`
         color: #e65c50;
     }
 
-        .group-subject {
+    .group-subject {
         display: flex;
         gap: 1rem;
         align-items: flex-end;
-    }
-    
-    #addbutton {
-        margin: auto;
-        height: 2.5rem;
-        padding: 0.5rem;
-        border: none;
-        border-radius: 8px;
-        background-color: #ff6f61;
-        color: #ffffff;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
     }
 
     .error-message {
@@ -241,25 +229,77 @@ const ScheduleFormStyles = styled.div`
         width: 100%;
         text-align: left;
         padding: 1rem 1.5rem;
+
     }
     
+    #addbutton {
+        margin: auto;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        background-color: #ff6f61;
+        color: #ffffff;
+    }
+
     .added-subjects button {
-        padding: 0;
-        margin: 0;
-        size: 0.5rem;
         background: none;
         border: none;
         cursor: pointer;
         color: #ff6f61;
-        margin-leftt: auto;
-
+        margin: 0;
+        padding: 0;
+        margin-left: auto;
     }
-
 
     #added-subjects-p{
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+    
+    .navigate-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        }
+    
+    .teachername-div{
+        margin-bottom: 1rem;
+    }
+    
+    .teacher-infos-div {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    #addbutton-teachers{
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        background-color: #ff6f61;
+        color: #ffffff;
+    
+    }
+
+    .added-teachers-container {
+        text-align: left;
+        width: 100%;
+    }
+
+    .added-teachers {
+        box-sizing: border-box;
+        display: flex;
+        width: 100%;
+        text-align: left;
+        padding: 1rem 1.5rem;
     }
 
     @media (max-width: 768px) {

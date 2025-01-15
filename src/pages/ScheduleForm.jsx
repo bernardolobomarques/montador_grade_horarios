@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ScheduleFormStyles } from './ScheduleFormStyles';
-import { Navigate, useNavigate } from 'react-router-dom'; // Import useHistory
+import { useNavigate } from 'react-router-dom'; 
 
 const ScheduleForm = () => {
     const [step, setStep] = useState(1);
     const [scheduleDetails, setScheduleDetails] = useState({
         name: '',
-        daysOfWeek: [], // Alterado de weekdays para daysOfWeek
+        daysOfWeek: [], 
         startTime: '',
         endTime: '',
         periodsPerDay: '',
         periodDuration: '',
         numberOfClasses: '',
         subjects: [],
-        teachers: [{ name: '', subject: '', workload: '' }]
+        teachers: []
     });
     const [newSubject, setNewSubject] = useState({ name: '', periodsPerWeek: '' });
+    const [newTeacher, setNewTeacher] = useState({ name: '', subject: '', workload: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [subjectError, setSubjectError] = useState('');
@@ -42,11 +43,9 @@ const ScheduleForm = () => {
         setNewSubject({ ...newSubject, [name]: value });
     };
 
-    const handleTeacherChange = (index, e) => {
+    const handleTeacherChange = (e) => {
         const { name, value } = e.target;
-        const teachers = [...scheduleDetails.teachers];
-        teachers[index][name] = value;
-        setScheduleDetails({ ...scheduleDetails, teachers });
+        setNewTeacher({ ...newTeacher, [name]: value });
     };
 
     const addSubject = () => {
@@ -68,10 +67,21 @@ const ScheduleForm = () => {
     };
 
     const addTeacher = () => {
+        if (!newTeacher.name || !newTeacher.subject || !newTeacher.workload) {
+            setError('Please fill in all fields before adding a teacher.');
+            return;
+        }
         setScheduleDetails({
             ...scheduleDetails,
-            teachers: [...scheduleDetails.teachers, { name: '', subject: '', workload: '' }]
+            teachers: [...scheduleDetails.teachers, newTeacher]
         });
+        setNewTeacher({ name: '', subject: '', workload: '' });
+        setError('');
+    };
+
+    const removeTeacher = (index) => {
+        const updatedTeachers = scheduleDetails.teachers.filter((_, i) => i !== index);
+        setScheduleDetails({ ...scheduleDetails, teachers: updatedTeachers });
     };
 
     const handleSubmit = async (e) => {
@@ -80,23 +90,23 @@ const ScheduleForm = () => {
         setError('');
     
         try {
-            const user = JSON.parse(localStorage.getItem('user')); // Assumindo que o usuário está armazenado no localStorage
+            const user = JSON.parse(localStorage.getItem('user')); 
             const response = await axios.post('http://localhost:5000/schedule', { ...scheduleDetails, user: user.email });
             if (response.data.success) {
                 alert('Schedule registered successfully!');
                 setScheduleDetails({
                     name: '',
-                    daysOfWeek: [], // Alterado de weekdays para daysOfWeek
+                    daysOfWeek: [], 
                     startTime: '',
                     endTime: '',
                     periodsPerDay: '',
                     periodDuration: '',
                     numberOfClasses: '',
                     subjects: [],
-                    teachers: [{ name: '', subject: '', workload: '' }],
+                    teachers: [],
                     user: localStorage.getItem('user')
                 });
-                setStep(1);
+                navigate('/content');
             } else {
                 setError(response.data.message);
             }
@@ -114,7 +124,7 @@ const ScheduleForm = () => {
     return (
         <>
             <ScheduleFormStyles>
-                <button className="close-button" onClick={() => navigate('/content')}>⮜</button> {/* Add close button */}
+                <button className="close-button" onClick={() => navigate('/content')}>⮜</button>
                 <div className='progress-bar'>
                     <ul>
                         <li className={step === 1 ? 'active' : ''} onClick={() => goToStep(1)}>Step 1: Initial Information</li>
@@ -157,7 +167,7 @@ const ScheduleForm = () => {
                                                     type="checkbox"
                                                     id={`check_${day.name.toLowerCase()}`}
                                                     name={day.name}
-                                                    checked={scheduleDetails.daysOfWeek.includes(day.name)} // Alterado de weekdays para daysOfWeek
+                                                    checked={scheduleDetails.daysOfWeek.includes(day.name)} 
                                                     onChange={handleWeekdayChange}
                                                 />
                                                 <label htmlFor={`check_${day.name.toLowerCase()}`}>{day.label}</label>
@@ -228,7 +238,7 @@ const ScheduleForm = () => {
                                         className="input-field"
                                     />
                                 </div>
-                                <button type="button" onClick={nextStep}>Next</button>
+                                <button type="button" onClick={nextStep}>▶</button>
                             </>
                         )}
                         {step === 2 && (
@@ -274,50 +284,69 @@ const ScheduleForm = () => {
                                     <button type="button" id='addbutton' onClick={addSubject}>+</button>
                                 </div>
                                 {subjectError && <p className="error-message">{subjectError}</p>}
-                                <button type="button" onClick={prevStep}>Previous</button>
-                                <button type="button" onClick={nextStep}>Next</button>
+                                <div className='navigate-buttons'>
+                                    <button type="button" onClick={prevStep}>◀</button>
+                                    <button type="button" onClick={nextStep}>▶</button>
+                                </div>
                             </>
                         )}
                         {step === 3 && (
                             <>
                                 <h1>Register Teachers</h1>
                                 <br />
-                                {scheduleDetails.teachers.map((teacher, index) => (
-                                    <div key={index} className="input-group">
-                                        <label htmlFor={`teacher-name-${index}`}>Teacher Name</label>
+                                <div className='added-teachers-container'>
+                                    <p id='added-teachers-p'>Added Teachers :</p>
+                                </div>
+                                <div className="subjects">
+                                    {scheduleDetails.teachers.map((teacher, index) => (
+                                        <div key={index} className="added-subjects">
+                                            <p>{teacher.name} - {teacher.subject} - {teacher.workload} hours/week</p>
+                                            <button type="button" onClick={() => removeTeacher(index)}>X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="input-group">
+                                    <div className='teachername-div'>
+                                        <label htmlFor="teacher-name">Teacher Name</label>
                                         <input
                                             type="text"
                                             name="name"
                                             placeholder="ex.: John Doe"
-                                            value={teacher.name}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`teacher-subject-${index}`}>Subject</label>
-                                        <input
-                                            type="text"
-                                            name="subject"
-                                            placeholder="ex.: Math"
-                                            value={teacher.subject}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`teacher-workload-${index}`}>Workload (hours)</label>
-                                        <input
-                                            type="number"
-                                            name="workload"
-                                            placeholder="ex.: 20"
-                                            value={teacher.workload}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
+                                            value={newTeacher.name}
+                                            onChange={handleTeacherChange}
                                             className="input-field"
                                         />
                                     </div>
-                                ))}
-                                <button type="button" onClick={addTeacher}>Add Teacher</button>
-                                <button type="button" onClick={prevStep}>Previous</button>
+                                    <div className='teacher-infos-div'>
+                                        <div className='teacher-subject-div'>
+                                            <label htmlFor="teacher-subject">Subject</label>
+                                            <select
+                                                name="subject"
+                                                value={newTeacher.subject}
+                                                onChange={handleTeacherChange}
+                                                className="input-field"
+                                            >
+                                                <option value="" disabled>Select a subject</option>
+                                                {scheduleDetails.subjects.map((subject, index) => (
+                                                    <option key={index} value={subject.name}>{subject.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className='teacher-workload-div'> 
+                                            <label htmlFor="teacher-workload">Workload (hours)</label>
+                                            <input
+                                                type="number"
+                                                name="workload"
+                                                placeholder="ex.: 20"
+                                                value={newTeacher.workload}
+                                                onChange={handleTeacherChange}
+                                                className="input-field"
+                                            />
+                                        </div>
+                                        <button type="button" id='addbutton-teachers' onClick={addTeacher}>+</button>
+                                    </div>
+                                </div>
+                                <button type="button" onClick={prevStep}>◀</button>
                                 <button type="submit" disabled={loading}>Register Schedule</button>
                             </>
                         )}
