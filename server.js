@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
+const fs = require('fs');
+const path = require('path');
 
 // Cria uma instância do Express e define a porta do servidor.
 const app = express();
@@ -32,7 +34,7 @@ const userSchema = new mongoose.Schema({
 // Cria um modelo de usuário baseado no esquema definido.
 const User = mongoose.model('User', userSchema);
 
-const scheduleSchema = new mongoose.Schema({
+const agendaSchema = new mongoose.Schema({
   name: { type: String, required: true },
   daysOfWeek: { type: String, required: true },
   startTime: { type: String, required: true },
@@ -45,8 +47,8 @@ const scheduleSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
-// Cria um modelo de horário baseado no esquema definido.
-const Schedule = mongoose.model('Schedule', scheduleSchema);
+// Cria um modelo de agenda baseado no esquema definido.
+const Agenda = mongoose.model('Agenda', agendaSchema);
 
 // Endpoint para registro de usuário
 app.post('/register', async (req, res) => {
@@ -105,7 +107,7 @@ app.post('/google-login', async (req, res) => {
   }
 });
 
-// Endpoint para registro de horário
+// Endpoint para registro da agenda
 app.post('/schedule', async (req, res) => {
   const { name, daysOfWeek, startTime, endTime, periodsPerDay, periodDuration, numberOfClasses, subjects, teachers, user } = req.body;
   try {
@@ -118,6 +120,39 @@ app.post('/schedule', async (req, res) => {
     res.status(400).json({ success: false, message: 'Error: ' + err });
   }
 });
+
+// // Novo endpoint para buscar a agenda por ID
+// app.get('/schedule/:id', async (req, res) => {
+//   try {
+//     const schedule = await Schedule.findById(req.params.id);
+//     if (!schedule) {
+//       return res.status(404).json({ success: false, message: 'Schedule not found' });
+//     }
+//     res.json({ success: true, schedule });
+//   } catch (err) {
+//     res.status(400).json({ success: false, message: 'Error: ' + err });
+//   }
+// });
+
+// // Endpoint para listar todas as agendas de um usuário pelo ID
+// app.get('/schedules/:userId', async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found' });
+//     }
+//     const schedules = await Schedule.find({ user: userId });
+
+//     // Cria um arquivo JSON com as agendas do usuário
+//     const filePath = path.join(__dirname, 'user_schedules.json');
+//     fs.writeFileSync(filePath, JSON.stringify(schedules, null, 2));
+
+//     res.json({ success: true, schedules });
+//   } catch (err) {
+//     res.status(400).json({ success: false, message: 'Error: ' + err });
+//   }
+// });
 
 // Inicia o servidor e faz com que ele escute na porta definida.
 app.listen(port, () => {
