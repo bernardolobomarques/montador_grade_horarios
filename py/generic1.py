@@ -35,23 +35,28 @@ def connect_to_mongodb():
         # Usando a mesma URI do servidor Node.js
         uri = "mongodb+srv://bryanbernardo:bryanbernardo12345678@montacalendario.mzzfz.mongodb.net/?retryWrites=true&w=majority&appName=MontaCalendario"
         client = MongoClient(uri)
-        # Test the connection
-        client.server_info()
+        # Test the connection using admin command instead of server_info
+        client.admin.command('ping')
         print("Successfully connected to MongoDB")
-        return client.get_default_database()
+        return client.get_database("montacalendario")
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
         return None
 
 def load_school_from_db(schedule_id):
     db = connect_to_mongodb()
-    if not db:
+    print("AQUI")
+    if db is None:  # Modificado aqui: usando 'is None' em vez de 'not db'
+        print("Failed to connect to database")
         return None
     
     try:
-        # Agora buscamos da coleção 'schedules' ao invés de 'schools'
+        print(f"Searching for schedule with ID: {schedule_id}")
         schedule_data = db.schedules.find_one({"_id": ObjectId(schedule_id)})
         if not schedule_data:
+            # Debug: list all available schedules
+            all_schedules = list(db.schedules.find({}, {"_id": 1}))
+            print("Available schedule IDs:", [str(s["_id"]) for s in all_schedules])
             print("Schedule not found")
             return None
         
@@ -102,8 +107,8 @@ def printSchool(school):
         print(f'  {t.name} - {t.subject} ({t.workload} hours)')
 
 def main():
-    # Example usage with your school ID
-    school_id = "67872e99f4a7c34781281fcc"  # Replace with actual school ID
+    # Example usage with your school ID - using a valid ID from the database
+    school_id = "65badad72ff4111c10cc2397"  # Atualize este ID com um válido do seu banco
     school = load_school_from_db(school_id)
     
     if school:
