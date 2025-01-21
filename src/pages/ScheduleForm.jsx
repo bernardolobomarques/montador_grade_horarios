@@ -1,73 +1,87 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Header from '../components/Header';
 import { ScheduleFormStyles } from './ScheduleFormStyles';
+import { useNavigate } from 'react-router-dom'; 
 
 const ScheduleForm = () => {
     const [step, setStep] = useState(1);
     const [scheduleDetails, setScheduleDetails] = useState({
         name: '',
-        weekdays: {
-            monday: false,
-            tuesday: false,
-            wednesday: false,
-            thursday: false,
-            friday: false,
-            saturday: false,
-            sunday: false
-        },
+        daysOfWeek: [], 
         startTime: '',
         endTime: '',
         periodsPerDay: '',
         periodDuration: '',
         numberOfClasses: '',
-        subjects: [{ name: '', periodsPerWeek: '' }],
-        teachers: [{ name: '', subject: '', workload: '' }]
+        subjects: [],
+        teachers: []
     });
+    const [newSubject, setNewSubject] = useState({ name: '', periodsPerWeek: '' });
+    const [newTeacher, setNewTeacher] = useState({ name: '', subject: '', workload: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [subjectError, setSubjectError] = useState('');
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setScheduleDetails({ ...scheduleDetails, [name]: value });
     };
 
-    const handleWeekdayChange = (day) => {
-        setScheduleDetails({
-            ...scheduleDetails,
-            weekdays: {
-                ...scheduleDetails.weekdays,
-                [day]: !scheduleDetails.weekdays[day]
-            }
+    const handleWeekdayChange = (e) => {
+        const { name } = e.target;
+        setScheduleDetails((prevDetails) => {
+            const daysOfWeek = prevDetails.daysOfWeek.includes(name)
+                ? prevDetails.daysOfWeek.filter((d) => d !== name)
+                : [...prevDetails.daysOfWeek, name];
+            return { ...prevDetails, daysOfWeek };
         });
     };
 
-    const handleSubjectChange = (index, e) => {
+    const handleSubjectChange = (e) => {
         const { name, value } = e.target;
-        const subjects = [...scheduleDetails.subjects];
-        subjects[index][name] = value;
-        setScheduleDetails({ ...scheduleDetails, subjects });
+        setNewSubject({ ...newSubject, [name]: value });
     };
 
-    const handleTeacherChange = (index, e) => {
+    const handleTeacherChange = (e) => {
         const { name, value } = e.target;
-        const teachers = [...scheduleDetails.teachers];
-        teachers[index][name] = value;
-        setScheduleDetails({ ...scheduleDetails, teachers });
+        setNewTeacher({ ...newTeacher, [name]: value });
     };
 
     const addSubject = () => {
+        if (!newSubject.name || !newSubject.periodsPerWeek) {
+            setSubjectError('Please fill in both fields before adding a subject.');
+            return;
+        }
         setScheduleDetails({
             ...scheduleDetails,
-            subjects: [...scheduleDetails.subjects, { name: '', periodsPerWeek: '' }]
+            subjects: [...scheduleDetails.subjects, newSubject]
         });
+        setNewSubject({ name: '', periodsPerWeek: '' });
+        setSubjectError('');
+    };
+
+    const removeSubject = (index) => {
+        const updatedSubjects = scheduleDetails.subjects.filter((_, i) => i !== index);
+        setScheduleDetails({ ...scheduleDetails, subjects: updatedSubjects });
     };
 
     const addTeacher = () => {
+        if (!newTeacher.name || !newTeacher.subject || !newTeacher.workload) {
+            setError('Please fill in all fields before adding a teacher.');
+            return;
+        }
         setScheduleDetails({
             ...scheduleDetails,
-            teachers: [...scheduleDetails.teachers, { name: '', subject: '', workload: '' }]
+            teachers: [...scheduleDetails.teachers, newTeacher]
         });
+        setNewTeacher({ name: '', subject: '', workload: '' });
+        setError('');
+    };
+
+    const removeTeacher = (index) => {
+        const updatedTeachers = scheduleDetails.teachers.filter((_, i) => i !== index);
+        setScheduleDetails({ ...scheduleDetails, teachers: updatedTeachers });
     };
 
     const handleSubmit = async (e) => {
@@ -76,31 +90,23 @@ const ScheduleForm = () => {
         setError('');
     
         try {
-            const user = JSON.parse(localStorage.getItem('user')); // Assumindo que o usuário está armazenado no localStorage
+            const user = JSON.parse(localStorage.getItem('user')); 
             const response = await axios.post('http://localhost:5000/schedule', { ...scheduleDetails, user: user.email });
             if (response.data.success) {
                 alert('Schedule registered successfully!');
                 setScheduleDetails({
                     name: '',
-                    weekdays: {
-                        monday: false,
-                        tuesday: false,
-                        wednesday: false,
-                        thursday: false,
-                        friday: false,
-                        saturday: false,
-                        sunday: false
-                    },
+                    daysOfWeek: [], 
                     startTime: '',
                     endTime: '',
                     periodsPerDay: '',
                     periodDuration: '',
                     numberOfClasses: '',
-                    subjects: [{ name: '', periodsPerWeek: '' }],
-                    teachers: [{ name: '', subject: '', workload: '' }],
+                    subjects: [],
+                    teachers: [],
                     user: localStorage.getItem('user')
                 });
-                setStep(1);
+                navigate('/content');
             } else {
                 setError(response.data.message);
             }
@@ -117,8 +123,8 @@ const ScheduleForm = () => {
 
     return (
         <>
-            <Header />
             <ScheduleFormStyles>
+                <button className="close-button" onClick={() => navigate('/content')}>⮜</button>
                 <div className='progress-bar'>
                     <ul>
                         <li className={step === 1 ? 'active' : ''} onClick={() => goToStep(1)}>Step 1: Initial Information</li>
@@ -127,164 +133,220 @@ const ScheduleForm = () => {
                     </ul>
                 </div>
                 <div className='main-div-schedule'>
-                    <h1>Register Schedule</h1>
                     <form onSubmit={handleSubmit}>
                         {step === 1 && (
                             <>
-                                <label htmlFor="name">Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    placeholder="Name"
-                                    value={scheduleDetails.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label>Days of the Week</label>
-                                <div className="weekday-container">
-                                    {Object.entries({
-                                        monday: 'Monday',
-                                        tuesday: 'Tuesday',
-                                        wednesday: 'Wednesday',
-                                        thursday: 'Thursday',
-                                        friday: 'Friday',
-                                        saturday: 'Saturday',
-                                        sunday: 'Sunday'
-                                    }).map(([key, label]) => (
-                                        <div key={key} className="weekday-item">
-                                            <input
-                                                type="checkbox"
-                                                id={key}
-                                                checked={scheduleDetails.weekdays[key]}
-                                                onChange={() => handleWeekdayChange(key)}
-                                            />
-                                            <label htmlFor={key}>{label}</label>
-                                        </div>
-                                    ))}
+                                <h1>Inicial Information</h1>
+                                <br />
+                                <div className="input-group">
+                                    <label htmlFor="name">Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        placeholder="ex.: HighSchool - Morning"
+                                        value={scheduleDetails.name}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
                                 </div>
-                                <label htmlFor="startTime">Start Time</label>
-                                <input
-                                    type="time"
-                                    name="startTime"
-                                    placeholder="Start Time"
-                                    value={scheduleDetails.startTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="endTime">End Time</label>
-                                <input
-                                    type="time"
-                                    name="endTime"
-                                    placeholder="End Time"
-                                    value={scheduleDetails.endTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="periodsPerDay">Periods per Day</label>
-                                <input
-                                    type="number"
-                                    name="periodsPerDay"
-                                    placeholder="Periods per Day"
-                                    value={scheduleDetails.periodsPerDay}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="periodDuration">Period Duration (minutes)</label>
-                                <input
-                                    type="number"
-                                    name="periodDuration"
-                                    placeholder="Period Duration (minutes)"
-                                    value={scheduleDetails.periodDuration}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <label htmlFor="numberOfClasses">Number of Classes</label>
-                                <input
-                                    type="number"
-                                    name="numberOfClasses"
-                                    placeholder="Number of Classes"
-                                    value={scheduleDetails.numberOfClasses}
-                                    onChange={handleChange}
-                                    required
-                                    className="input-field"
-                                />
-                                <button type="button" onClick={nextStep}>Next</button>
+                                <div className='input-group'>
+                                    <label>Days of the Week</label>
+                                    <div className="weekday-container">
+                                        {[
+                                            { name: 'Sunday', label: 'S' },
+                                            { name: 'Monday', label: 'M' },
+                                            { name: 'Tuesday', label: 'T' },
+                                            { name: 'Wednesday', label: 'W' },
+                                            { name: 'Thursday', label: 'T' },
+                                            { name: 'Friday', label: 'F' },
+                                            { name: 'Saturday', label: 'S' }
+                                        ].map((day) => (
+                                            <div key={day.name} className="weekday-item">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`check_${day.name.toLowerCase()}`}
+                                                    name={day.name}
+                                                    checked={scheduleDetails.daysOfWeek.includes(day.name)} 
+                                                    onChange={handleWeekdayChange}
+                                                />
+                                                <label htmlFor={`check_${day.name.toLowerCase()}`}>{day.label}</label>
+                                            </div>
+                                        
+                                        ))}
+                                    </div>
+                                </div>
+                                <div id='time-container'>
+                                    <div className='start-time-div'>
+                                        <label htmlFor="startTime">Start Time</label>
+                                        <input
+                                            type="time"
+                                            name="startTime"
+                                            placeholder="Start Time"
+                                            value={scheduleDetails.startTime}
+                                            onChange={handleChange}
+                                            required
+                                            className="input-field"
+                                    />
+                                    </div>
+                                    <div className='end-time-div'>
+                                        <label htmlFor="endTime">End Time</label>
+                                        <input
+                                            type="time"
+                                            name="endTime"
+                                            placeholder="End Time"
+                                            value={scheduleDetails.endTime}
+                                            onChange={handleChange}
+                                            required
+                                            className="input-field"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="periodsPerDay">Periods per Day</label>
+                                    <input
+                                        type="number"
+                                        name="periodsPerDay"
+                                        placeholder="ex.: 7"
+                                        value={scheduleDetails.periodsPerDay}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="periodDuration">Period Duration (minutes)</label>
+                                    <input
+                                        type="number"
+                                        name="periodDuration"
+                                        placeholder="ex.: 40"
+                                        value={scheduleDetails.periodDuration}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label htmlFor="numberOfClasses">Number of Classes</label>
+                                    <input
+                                        type="number"
+                                        name="numberOfClasses"
+                                        placeholder="ex.: 4"
+                                        value={scheduleDetails.numberOfClasses}
+                                        onChange={handleChange}
+                                        required
+                                        className="input-field"
+                                    />
+                                </div>
+                                <button type="button" onClick={nextStep}>▶</button>
                             </>
                         )}
                         {step === 2 && (
                             <>
-                                {scheduleDetails.subjects.map((subject, index) => (
-                                    <div key={index}>
-                                        <label htmlFor={`subject-name-${index}`}>Subject Name</label>
+                                <h1>Register Subjects</h1>
+                                <br />
+                                <div className='added-subjects-container'>
+                                    <p id='added-subjects-p'>Added Subjects :</p>
+                                </div>
+                                <div className="subjects">
+                                    {scheduleDetails.subjects.map((subject, index) => (
+                                        <div key={index} className="added-subjects">
+                                            <p>{subject.name} - {subject.periodsPerWeek} periods/week</p>
+                                            <button type="button" onClick={() => removeSubject(index)}>X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className='group-subject'>
+                                    <div className="input-group">
+                                        <label htmlFor="subject-name">Subject Name</label>
                                         <input
                                             type="text"
                                             name="name"
-                                            placeholder="Subject Name"
-                                            value={subject.name}
-                                            onChange={(e) => handleSubjectChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`periodsPerWeek-${index}`}>Periods per Week</label>
-                                        <input
-                                            type="number"
-                                            name="periodsPerWeek"
-                                            placeholder="Periods per Week"
-                                            value={subject.periodsPerWeek}
-                                            onChange={(e) => handleSubjectChange(index, e)}
+                                            placeholder="ex.: Math"
+                                            value={newSubject.name}
+                                            onChange={handleSubjectChange}
                                             required
                                             className="input-field"
                                         />
                                     </div>
-                                ))}
-                                <button type="button" onClick={addSubject}>Add Subject</button>
-                                <button type="button" onClick={prevStep}>Previous</button>
-                                <button type="button" onClick={nextStep}>Next</button>
+                                    <div className='input-group'>
+                                        <label htmlFor="periodsPerWeek">Periods per Week</label>
+                                        <input
+                                            type="number"
+                                            name="periodsPerWeek"
+                                            placeholder="ex.: 5"
+                                            value={newSubject.periodsPerWeek}
+                                            onChange={handleSubjectChange}
+                                            required
+                                            className="input-field"
+                                        />
+                                    </div>
+                                    <button type="button" id='addbutton' onClick={addSubject}>+</button>
+                                </div>
+                                {subjectError && <p className="error-message">{subjectError}</p>}
+                                <div className='navigate-buttons'>
+                                    <button type="button" onClick={prevStep}>◀</button>
+                                    <button type="button" onClick={nextStep}>▶</button>
+                                </div>
                             </>
                         )}
                         {step === 3 && (
                             <>
-                                {scheduleDetails.teachers.map((teacher, index) => (
-                                    <div key={index}>
-                                        <label htmlFor={`teacher-name-${index}`}>Teacher Name</label>
+                                <h1>Register Teachers</h1>
+                                <br />
+                                <div className='added-teachers-container'>
+                                    <p id='added-teachers-p'>Added Teachers :</p>
+                                </div>
+                                <div className="subjects">
+                                    {scheduleDetails.teachers.map((teacher, index) => (
+                                        <div key={index} className="added-subjects">
+                                            <p>{teacher.name} - {teacher.subject} - {teacher.workload} hours/week</p>
+                                            <button type="button" onClick={() => removeTeacher(index)}>X</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="input-group">
+                                    <div className='teachername-div'>
+                                        <label htmlFor="teacher-name">Teacher Name</label>
                                         <input
                                             type="text"
                                             name="name"
-                                            placeholder="Teacher Name"
-                                            value={teacher.name}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`teacher-subject-${index}`}>Subject</label>
-                                        <input
-                                            type="text"
-                                            name="subject"
-                                            placeholder="Subject"
-                                            value={teacher.subject}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
-                                            className="input-field"
-                                        />
-                                        <label htmlFor={`teacher-workload-${index}`}>Workload (hours)</label>
-                                        <input
-                                            type="number"
-                                            name="workload"
-                                            placeholder="Workload (hours)"
-                                            value={teacher.workload}
-                                            onChange={(e) => handleTeacherChange(index, e)}
-                                            required
+                                            placeholder="ex.: John Doe"
+                                            value={newTeacher.name}
+                                            onChange={handleTeacherChange}
                                             className="input-field"
                                         />
                                     </div>
-                                ))}
-                                <button type="button" onClick={addTeacher}>Add Teacher</button>
-                                <button type="button" onClick={prevStep}>Previous</button>
+                                    <div className='teacher-infos-div'>
+                                        <div className='teacher-subject-div'>
+                                            <label htmlFor="teacher-subject">Subject</label>
+                                            <select
+                                                name="subject"
+                                                value={newTeacher.subject}
+                                                onChange={handleTeacherChange}
+                                                className="input-field"
+                                            >
+                                                <option value="" disabled>Select a subject</option>
+                                                {scheduleDetails.subjects.map((subject, index) => (
+                                                    <option key={index} value={subject.name}>{subject.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className='teacher-workload-div'> 
+                                            <label htmlFor="teacher-workload">Workload (hours)</label>
+                                            <input
+                                                type="number"
+                                                name="workload"
+                                                placeholder="ex.: 20"
+                                                value={newTeacher.workload}
+                                                onChange={handleTeacherChange}
+                                                className="input-field"
+                                            />
+                                        </div>
+                                        <button type="button" id='addbutton-teachers' onClick={addTeacher}>+</button>
+                                    </div>
+                                </div>
+                                <button type="button" onClick={prevStep}>◀</button>
                                 <button type="submit" disabled={loading}>Register Schedule</button>
                             </>
                         )}

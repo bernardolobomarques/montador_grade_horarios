@@ -36,7 +36,7 @@ const User = mongoose.model('User', userSchema);
 
 const agendaSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  daysOfWeek: { type: String, required: true },
+  daysOfWeek: { type: [String], required: true },
   startTime: { type: String, required: true },
   endTime: { type: String, required: true },
   periodsPerDay: { type: Number, required: true },
